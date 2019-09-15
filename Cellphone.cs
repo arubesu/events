@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System;
 
 public class Cellphone
@@ -6,8 +7,19 @@ public class Cellphone
 
     public void Call(string phoneNumber)
     {
-        if (OnCellphoneCalls != null)
-            OnCellphoneCalls(this, new CellphoneEventArgs(phoneNumber));
+        var errors = new List<Exception>();
+        foreach (var handler in OnCellphoneCalls.GetInvocationList())
+        {
+            try
+            {
+                handler.DynamicInvoke(this, new CellphoneEventArgs(phoneNumber));
+            }
+            catch (System.Exception ex)
+            {
+                errors.Add(ex);
+            }
+        }
+        throw new AggregateException(errors);
     }
 }
 
